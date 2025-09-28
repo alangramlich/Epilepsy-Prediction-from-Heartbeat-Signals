@@ -1,0 +1,1 @@
+Estas carpetas contienen las salidas del script de entrenamiento de modelos. Hay que analizarlo.
