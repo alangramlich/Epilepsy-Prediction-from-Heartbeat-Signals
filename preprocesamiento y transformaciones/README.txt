@@ -1,8 +1,15 @@
-Estos scripts chequean:
-	-Cuantas crisis tuvo el paciente
-	-la hora
-	-preprocesa la señal de ECG
-	-obtiene el tacograma (transforma el ECG a señal NNms)
-	-ventanea la señal de NNms en N ventanas, con longitud de de Ventana y solapamiento. A cada Ventana le añade "clasificacion", que puede ser preictal o no preictal.
-	-calcula los parametros de HRV para cada vendana. Mantiene la clasificacion "preictal" o "no_preictal".
-	-salida final del script: un excel con los parametros de HRV y la clasificacion, para entrenar un modelo de Machine Learning.
+En estos scripts se ingresa manualmente:
+	-cuantas crisis tuvo el paciente
+	-la hora de cada crisis
+	-como se define la ventana
+	-en que canal esta el registro de ecg
+	-el nombre del archivo
+	-hora de inicio y fin del registro
+	-hora de inicio y fin de la/s crisis
+	-momento de inicio del periodo preictal (varia para cada dataset)
+
+Con estos datos, el script sabe que ventanas son preictales y cuales no.
+
+Luego, el mismo script:
+	-realiza el preprocesamiento de la señal (biosppy)
+	-ventanea la señal ()
