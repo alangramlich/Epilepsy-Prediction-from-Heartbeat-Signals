@@ -87,7 +87,7 @@ import pyedflib
 from biosppy.signals import ecg as ekg
 # --- Parámetros (de Celda 1) ---
 nombre = Path(r"PN00-1.edf")   # ruta al EDF
-canal = 29
+canal = 33
 fs = frecuencia_muestreo       # usamos 512 Hz
 ventana_seg = 10               # duración de ventana a graficar
 inicio_seg = int(pre_ini_s)    # segundo desde el que arranca la ventana
@@ -124,6 +124,7 @@ out = ekg.ecg(signal=datos_canal, sampling_rate=frecuencia_muestreo, show=True)
 senial_filt = out['filtered'] #este es el ECG filtrado
 rpeaks = out['rpeaks'] #Este es el vector de rpeaks
 #-------------------GRAFICO EL ECG FILTRADO
+
 
 import numpy as np
 import matplotlib.pyplot as plt
