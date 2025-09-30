@@ -79,71 +79,155 @@ plt.show()
 
 
 
-# === Celda 2: Leer EDF y graficar ECG crudo (manteniendo Fs hardcodeada) ===
+# === Celda 2: Leer EDF y graficar ECG crudo ===
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 import pyedflib
-
+from biosppy.signals import ecg as ekg
 # --- Parámetros (de Celda 1) ---
-nombre = Path(r"C:\Users\alang\OneDrive\Documents\GitHub\Epilepsy-Prediction-from-Heartbeat-Signals\signal processing - feature extraction\sample EDF (P0_SZ1)\PN00-1.edf")   # ruta al EDF
+nombre = Path(r"PN00-1.edf")   # ruta al EDF
 canal = 33
-fs = frecuencia_muestreo       # usamos la hardcodeada (512 Hz)
+fs = frecuencia_muestreo       # usamos 512 Hz
 ventana_seg = 10               # duración de ventana a graficar
 inicio_seg = int(pre_ini_s)    # segundo desde el que arranca la ventana
+archivo_edf = pyedflib.EdfReader("PN00-1.edf")
+datos_canal = archivo_edf.readSignal(canal)
+datos_canal = datos_canal[:512*8] #recorto la señal a los primeros 8 seg
 
-# --- Lectura del canal ECG ---
-if not nombre.exists():
-    raise FileNotFoundError(f"No se encontró el archivo EDF en: {nombre}")
+# --------------------------------------------GRAFICO EL ECG SIN FILTRAR
+frecuencia_muestreo = 512  
+duracion = 8  # segundos
 
-edf = pyedflib.EdfReader(str(nombre))
-try:
-    ecg_crudo = edf.readSignal(canal)
-finally:
-    edf.close()
+# número de muestras
+n_muestras = duracion * frecuencia_muestreo  
 
-# --- Eje temporal y recorte ---
-eje_t = np.arange(ecg_crudo.size) / fs
-ini = max(0, inicio_seg * fs)
-fin = min(ini + ventana_seg * fs, ecg_crudo.size)
+# segmento desde el inicio
+segmento = datos_canal
 
-# --- Gráfico ECG crudo ---
-plt.figure(figsize=(10, 4))
-plt.plot(eje_t[ini:fin], ecg_crudo[ini:fin], color="black")
-plt.title(f"ECG crudo – {ventana_seg}s desde t={inicio_seg}s")
+# eje de tiempo en segundos
+tiempo = np.arange(0, duracion, 1/frecuencia_muestreo)
+
+# graficar
+plt.figure(figsize=(12,4))
+plt.plot(tiempo, segmento)
+plt.title("Primeros 15 segundos de la señal")
 plt.xlabel("Tiempo [s]")
-plt.ylabel("Amplitud [u]")
+plt.ylabel("Amplitud [uV]")  # o la unidad de tu registro
+plt.grid(True)
+plt.show()
+#----------------------------------------------------------------------------
+
+#---------------------------------APLICO LOS FILTROS DE BIOSPPY
+out = ekg.ecg(signal=datos_canal, sampling_rate=frecuencia_muestreo, show=True)
+# out tiene muchas salidas (ver documentacion biosspy)
+senial_filt = out['filtered'] #este es el ECG filtrado
+rpeaks = out['rpeaks'] #Este es el vector de rpeaks
+#-------------------GRAFICO EL ECG FILTRADO
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+frecuencia_muestreo = 512  # Hz
+duracion = len(senial_filt) / frecuencia_muestreo
+tiempo = np.arange(0, duracion, 1/frecuencia_muestreo)
+
+plt.figure(figsize=(15,8))
+
+# --- Gráfico 1: ECG filtrado ---
+plt.subplot(2,1,1)
+plt.plot(tiempo, senial_filt, color="blue")
+plt.title("ECG filtrado")
+plt.xlabel("Tiempo [s]")
+plt.ylabel("Amplitud [uV]")
 plt.grid(True)
 
-# Líneas verticales de referencia si caen dentro de la ventana
-for xline, lab, col in [
-    (pre_ini_s, "pre_ini", "blue"),
-    (pre_fin_s, "pre_fin", "blue"),
-    (t_crisis_ini_s, "crisis_ini", "red"),
-    (t_crisis_fin_s, "crisis_fin", "red"),
-]:
-    if eje_t[ini] <= xline <= eje_t[fin-1]:
-        plt.axvline(xline, linestyle="--", linewidth=1, color=col)
-        plt.text(xline, plt.ylim()[1], f" {lab}", va="top", fontsize=8, color=col)
+# --- Gráfico 2: R-peaks (posiciones) ---
+plt.subplot(2,1,2)
+plt.plot(tiempo, senial_filt, color="lightgray", linewidth=0.8, label="ECG filtrado")
+plt.plot(tiempo[rpeaks], senial_filt[rpeaks], 'ro', label="R-peaks")
+plt.title("Detección de R-peaks")
+plt.xlabel("Tiempo [s]")
+plt.ylabel("Amplitud [uV]")
+plt.legend()
+plt.grid(True)
 
 plt.tight_layout()
 plt.show()
 
-# Resumen útil
-dur_total_s = ecg_crudo.size / fs
-print(f"Muestras: {ecg_crudo.size} | Fs usada: {fs} Hz | Duración total: {dur_total_s:.1f} s")
-print(f"Ventana graficada: [{eje_t[ini]:.2f}s, {eje_t[fin-1]:.2f}s]")
 
 
-tengo en ecg_crudo el ecg completo de la señal
-de la tabla puedo sacar el resto de variables
-ahora: preprocesar con biosppy 
-luego: alg deteccion picos R
-desp: mostrar el vector de muestras 
-desp: el vector de diferencias 
-(todo lo anterior graficando los primeros 5 latidos)
-siguiente paso: sacar la primer ventana de 180 latidos
-calcular los parametros de esa ventana
-luego explicar el ventaneo y la clasificacion
-sacar para el paciente 1
-y listo el pollo desplumada la gallina me consigo un trabajo mejor
+#==========================================Ahora paso el rpeaks a segundos
+
+
+diferencias = np.diff(rpeaks)  # Esto calcula nn_intervals[i][j] - nn_intervals[i][j+1]
+intervalos_nn = diferencias/512*1000
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Suponiendo que intervalos_nn ya está en milisegundos
+pares_latidos = np.arange(1, len(intervalos_nn) + 1)
+
+plt.figure(figsize=(12,5))
+plt.plot(pares_latidos, intervalos_nn, marker='o', linestyle='-', color='b')
+
+plt.title("Serie de intervalos NN")
+plt.xlabel("Par de latidos")
+plt.ylabel("Intervalo NN [ms]")
+plt.grid(True)
+plt.show()
+
+# ============================Calcular los parametros
+import scipy.signal as signal
+import math 
+import biosppy
+from biosppy.signals import ecg as ekg
+import numpy as np
+import matplotlib.pyplot as plt
+import pyedflib
+import nolds
+import neurokit2 as nk
+from datetime import datetime, timedelta
+import pandas as pd
+import pyhrv.tools as tools 
+import pyhrv.time_domain as td 
+import pyhrv.frequency_domain as fd 
+import pyhrv.nonlinear as nl 
+import numpy as np
+# temporales
+parametros_temporales = td.hr_parameters(nni=intervalos_nn)
+hr_mean = parametros_temporales['hr_mean']
+hr_min = parametros_temporales['hr_min']
+hr_max = parametros_temporales['hr_max']
+hr_std = parametros_temporales['hr_std']
+# frecuenciales
+parametros_frecuenciales = fd.welch_psd(intervalos_nn)
+aux = td.nn50(nni=intervalos_nn)
+p_nn_50 = aux['pnn50']
+VLF_power = parametros_frecuenciales['fft_abs'][0] #0 = very low frequency
+lf_power = parametros_frecuenciales['fft_abs'][1] #1 = low frequency
+hf_power = parametros_frecuenciales['fft_abs'][2] #2 = high frequency
+# no lineales
+nonlinear_features = nl.poincare(intervalos_nn)
+sd1 = nonlinear_features['sd1']
+sd2 = nonlinear_features['sd2']
+sd_ratio = nonlinear_features['sd_ratio']
+elipse_area = nonlinear_features['ellipse_area']
+nonlinear_features = nl.sample_entropy(nni = intervalos_nn)
+entropia = nonlinear_features['sampen']
+
+
+# tengo en ecg_crudo el ecg completo de la señal
+# de la tabla puedo sacar el resto de variables
+# ahora: preprocesar con biosppy 
+# luego: alg deteccion picos R
+# desp: mostrar el vector de muestras 
+# desp: el vector de diferencias 
+# (todo lo anterior graficando los primeros 5 latidos)
+# siguiente paso: sacar la primer ventana de 180 latidos
+# calcular los parametros de esa ventana
+# luego explicar el ventaneo y la clasificacion
+# sacar para el paciente 1
+# y listo el pollo desplumada la gallina me consigo un trabajo mejor

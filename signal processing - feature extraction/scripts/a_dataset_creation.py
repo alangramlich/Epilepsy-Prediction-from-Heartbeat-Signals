@@ -195,7 +195,7 @@ LI_periodo_preictal = 15 #limite inferior en minutos
 LS_periodo_preictal = 0 #limite superior en minutos
 ventana_len = 180
 ventana_solap = 60
-nombre_archivo_excell = 'vent180_solap60_15minpreictal.xlsx'
+nombre_archivo_excell = 'prueba.xlsx'
 
 
 
