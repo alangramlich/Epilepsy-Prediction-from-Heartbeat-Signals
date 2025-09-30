@@ -86,7 +86,7 @@ import matplotlib.pyplot as plt
 import pyedflib
 
 # --- Parámetros (de Celda 1) ---
-nombre = Path(r"PN00-1.edf")   # ruta al EDF
+nombre = Path(r"C:\Users\alang\OneDrive\Documents\GitHub\Epilepsy-Prediction-from-Heartbeat-Signals\signal processing - feature extraction\sample EDF (P0_SZ1)\PN00-1.edf")   # ruta al EDF
 canal = 33
 fs = frecuencia_muestreo       # usamos la hardcodeada (512 Hz)
 ventana_seg = 10               # duración de ventana a graficar
@@ -133,3 +133,17 @@ plt.show()
 dur_total_s = ecg_crudo.size / fs
 print(f"Muestras: {ecg_crudo.size} | Fs usada: {fs} Hz | Duración total: {dur_total_s:.1f} s")
 print(f"Ventana graficada: [{eje_t[ini]:.2f}s, {eje_t[fin-1]:.2f}s]")
+
+
+tengo en ecg_crudo el ecg completo de la señal
+de la tabla puedo sacar el resto de variables
+ahora: preprocesar con biosppy 
+luego: alg deteccion picos R
+desp: mostrar el vector de muestras 
+desp: el vector de diferencias 
+(todo lo anterior graficando los primeros 5 latidos)
+siguiente paso: sacar la primer ventana de 180 latidos
+calcular los parametros de esa ventana
+luego explicar el ventaneo y la clasificacion
+sacar para el paciente 1
+y listo el pollo desplumada la gallina me consigo un trabajo mejor
