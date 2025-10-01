@@ -43,7 +43,7 @@ if not archivos_excel:
 
 print(f"\n🔍 Se encontraron {len(archivos_excel)} archivos Excel para procesar.\n")
 
-# === Procesar cada archivo ===
+# =0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000== Procesar cada archivo ===
 for archivo in archivos_excel:
     try:
         nombre_archivo = os.path.basename(archivo)
@@ -59,9 +59,9 @@ for archivo in archivos_excel:
 
         print(f"\n📁 Procesando: {nombre_archivo} (origen: {subcarpeta_relativa})")
 
-        xls = pd.ExcelFile(archivo)
+        xls = pd.ExcelFile(archivo) #Abre cada archivo en la lista
         df_list = []
-
+# =0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000== Leer todas las hojas de un mismo archivo ===
         for hoja in xls.sheet_names:
             df_hoja = pd.read_excel(xls, sheet_name=hoja)
 
@@ -75,17 +75,20 @@ for archivo in archivos_excel:
                 df_hoja["__origen"] = hoja
                 df_list.append(df_hoja)
 
-        if not df_list:
+        if not df_list: #Si NO agregue datos
             print(f"🚫 Sin hojas válidas (menos de 2 muestras por clase).")
             continue
 
-        df = pd.concat(df_list, ignore_index=True)
-        X = df[caracteristicas]
-        y = df[columna_etiquetas]
+        df = pd.concat(df_list, ignore_index=True) #Ahora df es un excel temporal que tiene todas las hojas en una sola.
+        # =0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000== ENTRENAMIENTO MODELOS ===
+        # 
+        # 
+        X = df[caracteristicas]   #parametros
+        y = df[columna_etiquetas] #preictal o no_preictal
 
-        porcentajes_entrenamiento = [0.70, 0.75, 0.80, 0.85, 0.90]
-        profundidades = [5, 10, 15, 20, None]
-        resultados = []
+        porcentajes_entrenamiento = [0.70, 0.75, 0.80, 0.85, 0.90] #todos estos modelos se van a entrenar
+        profundidades = [5, 10, 15, 20, None]                      #todos estos modelos se van a entrenar
+        resultados = []                                            #aca guardo los resultados
 
         for train_size in porcentajes_entrenamiento:
             resto = 1 - train_size
