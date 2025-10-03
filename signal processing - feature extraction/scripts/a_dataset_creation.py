@@ -193,8 +193,8 @@ import numpy as np
 
 LI_periodo_preictal = 15 #limite inferior en minutos
 LS_periodo_preictal = 0 #limite superior en minutos
-ventana_len = 180
-ventana_solap = 60
+ventana_len = 10
+ventana_solap = 2
 nombre_archivo_excell = 'prueba.xlsx'
 
 
